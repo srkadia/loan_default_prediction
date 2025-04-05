@@ -1,0 +1,32 @@
+services:
+
+  mlflow:
+    image: srkadia/loanguard-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlflow/mlruns
+      - ./artifacts:/mlflow/artifacts
+    environment:
+      - MLFLOW_ARTIFACT_ROOT=/mlflow/artifacts
+
+  train:
+    image: srkadia/loanguard-train
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+
+  backend:
+    image: srkadia/loanguard-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    volumes:
+      - ./artifacts:/app/artifacts
+
+  frontend:
+    image: srkadia/loanguard-frontend
+    ports:
+      - "3000:3000"
